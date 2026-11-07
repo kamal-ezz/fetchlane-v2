@@ -1,0 +1,45 @@
+name: Standalone binaries
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            artifact: fetchlane-linux-x64
+            binary: dist/fetchlane
+          - os: windows-latest
+            artifact: fetchlane-windows-x64
+            binary: dist/fetchlane.exe
+          - os: macos-15
+            artifact: fetchlane-macos-arm64
+            binary: dist/fetchlane
+          - os: macos-15-intel
+            artifact: fetchlane-macos-x64
+            binary: dist/fetchlane
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install ".[build]"
+      - name: Test CLI and platform-specific paths
+        run: python -m unittest discover -s tests -v
+      - run: python scripts/build_binary.py
+      - name: Verify executable, Unicode preferences, and impersonation
+        run: python scripts/smoke_binary.py "${{ matrix.binary }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.binary }}
+          if-no-files-found: error

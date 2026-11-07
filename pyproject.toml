@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fetchlane"
+version = "0.1.0"
+description = "Simple commands for yt-dlp downloads"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["yt-dlp[default,curl-cffi]>=2025.1.26"]
+
+[project.optional-dependencies]
+build = ["pyinstaller==6.22.3"]
+
+[project.scripts]
+fetchlane = "fetchlane.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["fetchlane*"]
